@@ -1,0 +1,7 @@
+*.key
+*.pem
+*.token
+secrets/
+*비밀번호*
+*password*
+browser-private/
