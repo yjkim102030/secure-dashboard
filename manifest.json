@@ -1,1 +1,1 @@
-{"version": 1, "algorithm": "AES-256-GCM", "kdf": "PBKDF2-SHA256", "iterations": 600000, "salt": "FII0Q5t708Mpejc1Z7w8dCNIIN2pGmk4XsdoJjlpuqg=", "nonce": "UKsgI5PRDravg8Hu", "payload": "dashboard.enc"}
+{"version": 1, "algorithm": "AES-256-GCM", "kdf": "PBKDF2-SHA256", "iterations": 600000, "salt": "dExoiUT/pilb2WiGVqEnw6yse2AJVhkKpfYMwXAB9Iw=", "nonce": "q7IrXeHMOzE66oEh", "payload": "dashboard.enc"}
