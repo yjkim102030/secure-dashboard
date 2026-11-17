@@ -51,16 +51,18 @@
   }
  };
  window.addEventListener('popstate',()=>{if(bundle)show();});
- async function unlock(){
-  if(!input.value){status.textContent='접속 비밀번호를 입력하세요.';return;}
+ async function unlock(rememberedKey=null){
+  if(!input.value&&!rememberedKey){status.textContent='접속 비밀번호를 입력하세요.';return;}
   button.disabled=true;status.textContent='출발월별 발매실적을 확인하고 있습니다…';
   try{
    const response=await fetch('manifest.json',{cache:'no-store'});if(!response.ok)throw Error('게시 정보를 불러오지 못했습니다.');manifest=await response.json();
    if(manifest.version!==1||manifest.algorithm!=='AES-256-GCM'||manifest.kdf!=='PBKDF2-SHA256'||manifest.iterations!==600000)throw Error('지원하지 않는 자료 형식입니다.');
-   const passwordKey=await crypto.subtle.importKey('raw',new TextEncoder().encode(input.value),'PBKDF2',false,['deriveKey']);input.value='';
+   const passwordKey=rememberedKey||await crypto.subtle.importKey('raw',new TextEncoder().encode(input.value),'PBKDF2',false,['deriveKey']);input.value='';
    key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:decode(manifest.salt),iterations:manifest.iterations,hash:'SHA-256'},passwordKey,{name:'AES-GCM',length:256},false,['decrypt']);
-   bundle=await decrypt('main');document.querySelector('.lock').remove();show();
-  }catch(error){input.value='';button.disabled=false;status.textContent=error.name==='OperationError'?'비밀번호가 맞지 않거나 자료가 손상되었습니다.':error.message;input.focus();}
+   bundle=await decrypt('main');await window.DashboardRemember?.save(passwordKey);document.querySelector('.lock').remove();show();
+  }catch(error){if(error.name==='OperationError')await window.DashboardRemember?.clear();input.value='';button.disabled=false;status.textContent=error.name==='OperationError'?'비밀번호가 맞지 않거나 자료가 손상되었습니다.':error.message;input.focus();}
  }
- button.addEventListener('click',unlock);input.addEventListener('keydown',event=>{if(event.key==='Enter')unlock();});
+ button.addEventListener('click',()=>unlock());input.addEventListener('keydown',event=>{if(event.key==='Enter')unlock();});
+ button.disabled=true;
+ (async()=>{const remembered=await window.DashboardRemember?.get();button.disabled=false;if(remembered)unlock(remembered);})();
 })();
