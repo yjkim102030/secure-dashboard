@@ -26,7 +26,7 @@
   const html=bundle.html?.[view]||await decrypt(bundle.htmlAssets[view]);
   if(sequence!==showSequence)return;
   if(frame)frame.remove();
-  frame=document.createElement('iframe');frame.title=view==='route'?'노선별 발매 상세':'출발월별 발매실적';frame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;background:#f6f3ef';
+  frame=document.createElement('iframe');frame.allow='clipboard-write';frame.title=view==='route'?'노선별 발매 상세':'출발월별 발매실적';frame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;background:#f6f3ef';
   document.body.style.cssText='margin:0;display:block;height:100vh';document.body.append(frame);frame.srcdoc=html;
   document.title=frame.title;
  }
