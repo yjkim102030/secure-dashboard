@@ -37,6 +37,11 @@
    try{
     const u=new URL(href,location.href),q=u.searchParams,date=q.get('capture')||bundle.latest;
     let result;
+    if(u.pathname==='/api/sales-trends'){
+     const catalog=await decrypt('trend-index'),route=q.get('route');
+     result=route?await decrypt(catalog.routes.find(r=>r.route===route)?.asset):catalog;
+     return new Response(JSON.stringify(result),{headers:{'Content-Type':'application/json'}});
+    }
     if(u.pathname.startsWith('/api/contract-documents')){
      const connectLocal=async()=>{
       try{
