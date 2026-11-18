@@ -30,11 +30,38 @@
  window.SalesRuntime={
   replace(href){history.replaceState(null,'',location.pathname+'?'+parameters(href));},
   navigate(href){history.pushState(null,'',location.pathname+'?'+parameters(href));show();},
-  async request(href){
+  async request(href,options={}){
    try{
     const u=new URL(href,location.href),q=u.searchParams,date=q.get('capture')||bundle.latest;
     let result;
-    if(u.pathname==='/api/dashboard')result=bundle.reports[(q.get('mode')||'bi')+'|'+date];
+    if(u.pathname.startsWith('/api/contract-documents')){
+     const connectLocal=async()=>{
+      try{
+       const response=await fetch('http://127.0.0.1:8772'+u.pathname+u.search,{...options,signal:AbortSignal.timeout(u.pathname.endsWith('/publish')?240000:options.method==='POST'?60000:10000)});
+       if(!response.ok){const error=await response.json();throw Error(error.error||'로컬 문서 조회에 실패했습니다.');}
+       return response;
+      }catch(error){throw Error('이 PC에서 「2. 대시보드 반영 및 열기」를 실행하고, 브라우저의 로컬 네트워크 연결을 허용한 뒤 다시 시도해 주세요. '+(error.message||''));}
+     };
+     if(options.method==='POST'){
+      const response=await connectLocal(),row=await response.json();
+      localStorage.setItem('sales-contract-local-enabled','1');
+      return new Response(JSON.stringify({...row,localOnly:true}),{headers:{'Content-Type':'application/json'}});
+     }
+     if(u.pathname.endsWith('/file')){
+      const id=q.get('id'),name='contract-file-'+id;
+      if(manifest.assets[name]){const file=await decrypt(name);return new Response(decode(file.contentBase64),{headers:{'Content-Type':file.mime||'application/octet-stream'}});}
+      return connectLocal();
+     }
+     const shared=await decrypt('contracts-index');result={...shared,documents:[...shared.documents]};
+     if(q.get('local')==='1'||localStorage.getItem('sales-contract-local-enabled')==='1'){
+      try{
+       const local=await(await connectLocal()).json(),ids=new Set(result.documents.map(r=>r.id));
+       result.documents.push(...local.documents.filter(r=>!ids.has(r.id)).map(r=>({...r,localOnly:true})));
+       result.routes=[...new Set([...result.routes,...local.routes])].sort();localStorage.setItem('sales-contract-local-enabled','1');
+      }catch(error){result.localNotice=error.message;}
+     }
+    }
+    else if(u.pathname==='/api/dashboard')result=bundle.reports[(q.get('mode')||'bi')+'|'+date];
     else if(u.pathname==='/api/companies')result=await decrypt('companies-'+date);
     else if(u.pathname==='/api/route'){
      const month=bundle.months.includes(q.get('month'))?q.get('month'):bundle.months[0];
