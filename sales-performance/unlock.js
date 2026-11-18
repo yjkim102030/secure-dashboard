@@ -16,12 +16,12 @@
  }
  const parameters=href=>{
   const u=new URL(href,location.href),params=new URLSearchParams(u.search);
-  if(u.pathname==='/route')params.set('view','route');
+  if(['/route','/route-fuel'].includes(u.pathname))params.set('view',u.pathname.slice(1));
   else if(u.pathname==='/')params.delete('view');
   return params;
  };
  function show(){
-  const view=new URLSearchParams(location.search).get('view')==='route'?'route':'dashboard';
+  const requested=new URLSearchParams(location.search).get('view');const view=['route','route-fuel'].includes(requested)?requested:'dashboard';
   if(frame)frame.remove();
   frame=document.createElement('iframe');frame.title=view==='route'?'노선별 발매 상세':'출발월별 발매실적';frame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;background:#f6f3ef';
   document.body.style.cssText='margin:0;display:block;height:100vh';document.body.append(frame);frame.srcdoc=bundle.html[view];
@@ -63,9 +63,9 @@
     }
     else if(u.pathname==='/api/dashboard')result=bundle.reports[(q.get('mode')||'bi')+'|'+date];
     else if(u.pathname==='/api/companies')result=await decrypt('companies-'+date);
-    else if(u.pathname==='/api/route'){
+    else if(['/api/route','/api/route-fuel'].includes(u.pathname)){
      const month=bundle.months.includes(q.get('month'))?q.get('month'):bundle.months[0];
-     const data=await decrypt('routes-'+month),initial=data['ALL|all|vv'];
+     const data=await decrypt((u.pathname==='/api/route-fuel'?'routes-fuel-':'routes-')+month),initial=data['ALL|all|vv'];
      let route=q.get('route')||initial.routes[0],line=q.get('line')||initial.route_lines[route]||'all',direction=q.get('direction')||'vv';
      const choices=Object.keys(initial.route_lines).filter(rt=>line==='all'||initial.route_lines[rt]===line).sort();
      if(route!=='ALL'&&!choices.includes(route))route=choices[0];
