@@ -69,6 +69,7 @@
       }catch(error){result.localNotice=error.message;}
      }
     }
+    else if(u.pathname==='/api/remark-views')result=await decrypt('remarks-'+(q.get('mode')||'bi')+'-'+date);
     else if(u.pathname==='/api/dashboard'){const tag=(q.get('mode')||'bi')+'|'+date;result=bundle.reports?.[tag]||await decrypt(bundle.reportAssets[tag]);}
     else if(u.pathname==='/api/companies')result=await decrypt('companies-'+date);
     else if(['/api/route','/api/route-fuel'].includes(u.pathname)){
