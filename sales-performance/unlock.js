@@ -71,6 +71,7 @@
     }
     else if(u.pathname==='/api/remark-views')result=await decrypt('remarks-'+(q.get('mode')||'bi')+'-'+date);
     else if(u.pathname==='/api/dashboard'){const tag=(q.get('mode')||'bi')+'|'+date;result=bundle.reports?.[tag]||await decrypt(bundle.reportAssets[tag]);}
+    else if(u.pathname==='/api/supply-changes')result=await decrypt('supply-'+date);
     else if(u.pathname==='/api/companies')result=await decrypt('companies-'+date);
     else if(['/api/route','/api/route-fuel'].includes(u.pathname)){
      const month=bundle.months.includes(q.get('month'))?q.get('month'):bundle.months[0];
